@@ -61,20 +61,20 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-PID_TypeDef motor_pid[4]; //ËÙ¶È»·²ÎÊý
-PID_TypeDef angle_pid[2]; //Î»ÖÃ»·²ÎÊý
+PID_TypeDef motor_pid[4]; //é€Ÿåº¦çŽ¯å‚æ•°
+PID_TypeDef angle_pid[2]; //ä½ç½®çŽ¯å‚æ•°
 
-uint8_t ReceiveBuffer[6] = {0}; //IIC½ÓÊÕ»º³åÇø
+uint8_t ReceiveBuffer[6] = {0}; //IICæŽ¥æ”¶ç¼“å†²åŒº
 
-PID_TypeDef abs_pid[2];           //¾ø¶Ô½Ç¶È£¨×ÔÎÈ£¬ÍÓÂÝÒÇ£©
-float ABS_Gimbal_angle[2] = {0};  //ÔÆÌ¨¾ø¶Ô½Ç¶È(×ÔÎÈ) {yaw, pitch}, 0-8192 3400-6000
-int16_t ABS_IMU_angle[2] = {0};   //¹éÒ»»¯Ö®ºóµÄIMU½Ç¶È£¬ÓÃÓÚ×ÔÎÈ {yaw, pitch}, 0-8192
-int16_t IMU_Angle_Raw[3] = {0};   //½ÓÊÕµ½µÄÍÓÂÝÒÇÅ·À­½Ç
-float IMU_Angle[3] = {0};         //×ª»¯Îª¸¡µãµÄÍÓÂÝÒÇÅ·À­½Ç
+PID_TypeDef abs_pid[2];           //ç»å¯¹è§’åº¦ï¼ˆè‡ªç¨³ï¼Œé™€èžºä»ªï¼‰
+float ABS_Gimbal_angle[2] = {0};  //äº‘å°ç»å¯¹è§’åº¦(è‡ªç¨³) {yaw, pitch}, 0-8192 3400-6000
+int16_t ABS_IMU_angle[2] = {0};   //å½’ä¸€åŒ–ä¹‹åŽçš„IMUè§’åº¦ï¼Œç”¨äºŽè‡ªç¨³ {yaw, pitch}, 0-8192
+int16_t IMU_Angle_Raw[3] = {0};   //æŽ¥æ”¶åˆ°çš„é™€èžºä»ªæ¬§æ‹‰è§’
+float IMU_Angle[3] = {0};         //è½¬åŒ–ä¸ºæµ®ç‚¹çš„é™€èžºä»ªæ¬§æ‹‰è§’
 
-int16_t Gimbal_angle[2] = {7500, 4800};   //ÔÆÌ¨½Ç¶ÈÉè¶¨ {yaw, pitch}£¬±àÂëÆ÷
+int16_t Gimbal_angle[2] = {7500, 4800};   //äº‘å°è§’åº¦è®¾å®š {yaw, pitch}ï¼Œç¼–ç å™¨
 
-int current_limit = 2000; //ÏÞÁ÷
+int current_limit = 2000; //é™æµ
 
 int i = 0;
 int j = 0;
@@ -127,20 +127,20 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-  //YAWÖáPID
-  pid_init(&motor_pid[0]); //ËÙ¶È»·
+  //YAWè½´PID
+  pid_init(&motor_pid[0]); //é€Ÿåº¦çŽ¯
   motor_pid[0].f_param_init(&motor_pid[0],PID_Speed,current_limit,5000,0,0,0,8000,61.4656753,0.6697404,0);   
-  pid_init(&angle_pid[0]); //Î»ÖÃ»·£¨Ïà¶ÔÎ»ÖÃ£©
+  pid_init(&angle_pid[0]); //ä½ç½®çŽ¯ï¼ˆç›¸å¯¹ä½ç½®ï¼‰
   angle_pid[0].f_param_init(&angle_pid[0],PID_Speed,300,300,0,0,4000,0,1.3713,0.00495369,94.8474*0);
-  pid_init(&abs_pid[0]); //Î»ÖÃ»·£¨×ÔÎÈ£©
+  pid_init(&abs_pid[0]); //ä½ç½®çŽ¯ï¼ˆè‡ªç¨³ï¼‰
   abs_pid[0].f_param_init(&abs_pid[0],PID_Speed,300,300,0,0,4000,0,-0.9,-0.003,-3);
 
-  //PitchÖáPID
-  pid_init(&motor_pid[1]); //ËÙ¶È»·
+  //Pitchè½´PID
+  pid_init(&motor_pid[1]); //é€Ÿåº¦çŽ¯
   motor_pid[1].f_param_init(&motor_pid[1],PID_Speed,current_limit,5000,0,0,0,8000,4.01239768,3.0348503,0);   
-  pid_init(&angle_pid[1]); //Î»ÖÃ»·£¨Ïà¶ÔÎ»ÖÃ£©
+  pid_init(&angle_pid[1]); //ä½ç½®çŽ¯ï¼ˆç›¸å¯¹ä½ç½®ï¼‰
   angle_pid[1].f_param_init(&angle_pid[1],PID_Speed,500,500,0,0,4000,0,1.27137,0.01084,27.877753*0.4);
-  pid_init(&abs_pid[1]); //Î»ÖÃ»·£¨×ÔÎÈ£©
+  pid_init(&abs_pid[1]); //ä½ç½®çŽ¯ï¼ˆè‡ªç¨³ï¼‰
   abs_pid[1].f_param_init(&abs_pid[1],PID_Speed,300,300,0,0,4000,0,0.5,0,10);
 
 
@@ -278,21 +278,21 @@ void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *hi2c)
   HAL_I2C_Slave_Receive_IT(&hi2c2,ReceiveBuffer,sizeof(ReceiveBuffer));
 }
 
-//ÍÓÂÝÒÇÎ»ÖÃ¿ØÖÆ
+//é™€èžºä»ªä½ç½®æŽ§åˆ¶
 void Abs_angle_control_loop()
 {
-  /*×ÔÎÈ¿ØÖÆ*/
-  //IMU¹éÒ»»¯
+  /*è‡ªç¨³æŽ§åˆ¶*/
+  //IMUå½’ä¸€åŒ–
   ABS_IMU_angle[0] = (int)((IMU_Angle[2]*8192)/360); //yaw
   ABS_IMU_angle[1] = (int)(((IMU_Angle[0]+180.0)*8192)/360); //pitch
-  //YAW¼ÆËã
+  //YAWè®¡ç®—
   int motor_ID = 0;
   abs_pid[motor_ID].target = ABS_Gimbal_angle[0];
   abs_pid[motor_ID].f_cal_pid(&abs_pid[motor_ID], ABS_IMU_angle[motor_ID], 8192);
   motor_pid[motor_ID].target = abs_pid[motor_ID].output; 																							
   motor_pid[motor_ID].f_cal_pid(&motor_pid[motor_ID],moto_chassis[motor_ID].speed_rpm, 0);
 
-  //PITCH¼ÆËã
+  //PITCHè®¡ç®—
   motor_ID = 1;
   abs_pid[motor_ID].target = ABS_Gimbal_angle[1];
   abs_pid[motor_ID].f_cal_pid(&abs_pid[motor_ID], ABS_IMU_angle[motor_ID], 8192);
@@ -305,20 +305,20 @@ void Abs_angle_control_loop()
   HAL_Delay(1);
 }
 
-//±àÂëÆ÷Î»ÖÃ¿ØÖÆ
+//ç¼–ç å™¨ä½ç½®æŽ§åˆ¶
 void Rel_angle_control_loop()
 {
     
     i++;
-  /*×ÔÎÈ¼ÆËã*/
-  //IMU¹éÒ»»¯
+  /*è‡ªç¨³è®¡ç®—*/
+  //IMUå½’ä¸€åŒ–
   ABS_IMU_angle[0] = (int)(IMU_Angle[2]*(8192/360)); //yaw
   ABS_IMU_angle[1] = (int)((IMU_Angle[0]+180.0)*(8192/360)); //pitch
 
   if(Gimbal_angle[0] > 8191) Gimbal_angle[0] = 0;
   else if(Gimbal_angle[0] < 0) Gimbal_angle[0] = 8191;
-    //ÓÃPID¼ÆËãµçÁ÷
-    //ÕâÀïÓÃfor»áÓÐÆæ¹ÖµÄÎÊÌâ£¬ÔÝÊ±Õ¹¿ª
+    //ç”¨PIDè®¡ç®—ç”µæµ
+    //è¿™é‡Œç”¨forä¼šæœ‰å¥‡æ€ªçš„é—®é¢˜ï¼Œæš‚æ—¶å±•å¼€
     int motor_ID = 0;
     angle_pid[motor_ID].target = Gimbal_angle[0];
     angle_pid[motor_ID].f_cal_pid(&angle_pid[motor_ID], moto_chassis[motor_ID].angle, 8192);
@@ -337,11 +337,11 @@ void Rel_angle_control_loop()
     HAL_Delay(1); //1000hz
 }
 
-//×ÔÎÈPIDÐ§¹û²âÊÔ
+//è‡ªç¨³PIDæ•ˆæžœæµ‹è¯•
 void Abs_angle_PID_test_loop(int motor_ID)
 {
-  //×ÔÎÈÐ§¹û²âÊÔ
-  //IMU¹éÒ»»¯
+  //è‡ªç¨³æ•ˆæžœæµ‹è¯•
+  //IMUå½’ä¸€åŒ–
   ABS_IMU_angle[0] = (int)((IMU_Angle[2]*8192)/360); //yaw
   ABS_IMU_angle[1] = (int)(((IMU_Angle[0]+180.0)*8192)/360); //pitch
   abs_pid[motor_ID].target = 0;
@@ -360,7 +360,7 @@ void Abs_angle_PID_test_loop(int motor_ID)
   HAL_Delay(1);
 }
 
-//Î»ÖÃ»·PIDÐ§¹û²âÊÔ
+//ä½ç½®çŽ¯PIDæ•ˆæžœæµ‹è¯•
 void Rel_angle_PID_test_loop(int motor_ID)
 {
   angle_pid[motor_ID].target = 7000;
@@ -385,7 +385,7 @@ void Rel_angle_PID_test_loop(int motor_ID)
                     IMU_Angle[motor_ID]);
 }
 
-//ËÙ¶È»·¿ÆÑ§µ÷²Î£¨±àÂëÆ÷½ÇËÙ¶È£©
+//é€Ÿåº¦çŽ¯ç§‘å­¦è°ƒå‚ï¼ˆç¼–ç å™¨è§’é€Ÿåº¦ï¼‰
 void speed_loop_PID_tuning(int motor_ID)
 {
   speed = moto_chassis[motor_ID].speed_rpm;
@@ -401,7 +401,7 @@ void speed_loop_PID_tuning(int motor_ID)
   if(motor_ID == 1) set_moto_current(&hcan1, 0, current, 0, 0);
 }
 
-//±àÂëÆ÷Î»ÖÃ»·¿ÆÑ§µ÷²Î
+//ç¼–ç å™¨ä½ç½®çŽ¯ç§‘å­¦è°ƒå‚
 void Rel_angleloop_PID_tuning(int motor_ID)
 {
   if(i <= 100) speed_set = 0;
@@ -421,10 +421,10 @@ void Rel_angleloop_PID_tuning(int motor_ID)
   printf("%d, %d\n", speed_set, moto_chassis[motor_ID].total_angle);
 }
 
-//ÍÓÂÝÒÇÎ»ÖÃ»·¿ÆÑ§µ÷²Î
+//é™€èžºä»ªä½ç½®çŽ¯ç§‘å­¦è°ƒå‚
 void Abs_anglelop_PID_tuning(int motor_ID)
 {
-  //IMU¹éÒ»»¯
+  //IMUå½’ä¸€åŒ–
   ABS_IMU_angle[0] = (int)((IMU_Angle[2]*8192)/360); //yaw
   ABS_IMU_angle[1] = (int)(((IMU_Angle[0]+180.0)*8192)/360); //pitch
 

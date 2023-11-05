@@ -4,9 +4,9 @@
   * @author  Ginger
   * @version V1.0.0
   * @date    2015/11/14
-  * @brief   ¶ÔÃ¿Ò»¸öpid½á¹¹Ìå¶¼ÒªÏÈ½øĞĞº¯ÊıµÄÁ¬½Ó£¬ÔÙ½øĞĞ³õÊ¼»¯
+  * @brief   å¯¹æ¯ä¸€ä¸ªpidç»“æ„ä½“éƒ½è¦å…ˆè¿›è¡Œå‡½æ•°çš„è¿æ¥ï¼Œå†è¿›è¡Œåˆå§‹åŒ–
   ******************************************************************************
-  * @attention Ó¦¸ÃÊÇÓÃ¶ş½×²î·Ö(d)ÔÆÌ¨»á¸ü¼ÓÎÈ¶¨
+  * @attention åº”è¯¥æ˜¯ç”¨äºŒé˜¶å·®åˆ†(d)äº‘å°ä¼šæ›´åŠ ç¨³å®š
   *
   ******************************************************************************
   */
@@ -20,7 +20,7 @@
 PID_TypeDef pid_pitch,pid_pithch_speed,pid_roll,pid_roll_speed,pid_yaw_speed;
 extern int isMove;
 
-/*²ÎÊı³õÊ¼»¯--------------------------------------------------------------*/
+/*å‚æ•°åˆå§‹åŒ–--------------------------------------------------------------*/
 static void pid_param_init(
 	PID_TypeDef * pid, 
 	PID_ID   id,
@@ -37,7 +37,7 @@ static void pid_param_init(
 {
 	pid->id = id;		
 	
-	pid->ControlPeriod = period;             //Ã»ÓÃµ½
+	pid->ControlPeriod = period;             //æ²¡ç”¨åˆ°
 	pid->DeadBand = deadband;
 	pid->IntegralLimit = intergral_limit;
 	pid->MaxOutput = maxout;
@@ -51,7 +51,7 @@ static void pid_param_init(
 	pid->output = 0;
 }
 
-/*ÖĞÍ¾¸ü¸Ä²ÎÊıÉè¶¨--------------------------------------------------------------*/
+/*ä¸­é€”æ›´æ”¹å‚æ•°è®¾å®š--------------------------------------------------------------*/
 static void pid_reset(PID_TypeDef * pid, float kp, float ki, float kd)
 {
 	pid->kp = kp;
@@ -59,9 +59,9 @@ static void pid_reset(PID_TypeDef * pid, float kp, float ki, float kd)
 	pid->kd = kd;
 }
 
-/*pid¼ÆËã-----------------------------------------------------------------------*/
+/*pidè®¡ç®—-----------------------------------------------------------------------*/
 
-//»·ĞÎÇó²îµÄ¼ÆËã(¹ıÁã´¦Àí)
+//ç¯å½¢æ±‚å·®çš„è®¡ç®—(è¿‡é›¶å¤„ç†)
 int circle_err(int val_a, int val_b, int circle_len)
 {
 	if(val_a-val_b > circle_len/2)
@@ -89,7 +89,7 @@ static float pid_calculate(PID_TypeDef* pid, float measure, int circle_len)//, i
 	pid->last_err  = pid->err;
 	pid->last_output = pid->output;
 	
-	//Çó²î²¿·Ö
+	//æ±‚å·®éƒ¨åˆ†
 	if(circle_len == 0)
 	{
 		pid->err = pid->target - pid->measure;
@@ -100,7 +100,7 @@ static float pid_calculate(PID_TypeDef* pid, float measure, int circle_len)//, i
 	}
 	
 	
-	//ÊÇ·ñ½øÈëËÀÇø
+	//æ˜¯å¦è¿›å…¥æ­»åŒº
 	if((ABS(pid->err) > pid->DeadBand))
 	{
 		pid->pout = pid->kp * pid->err;
@@ -109,17 +109,17 @@ static float pid_calculate(PID_TypeDef* pid, float measure, int circle_len)//, i
 
 		pid->dout =  pid->kd * (pid->err - pid->last_err); 
 		
-		//»ı·ÖÊÇ·ñ³¬³öÏŞÖÆ
+		//ç§¯åˆ†æ˜¯å¦è¶…å‡ºé™åˆ¶
 		if(pid->iout > pid->IntegralLimit)
 			pid->iout = pid->IntegralLimit;
 		if(pid->iout < - pid->IntegralLimit)
 			pid->iout = - pid->IntegralLimit;
 		
-		//pidÊä³öºÍ
+		//pidè¾“å‡ºå’Œ
 		pid->output = pid->pout + pid->iout + pid->dout;
 		
 
-		pid->output = pid->output*0.7f + pid->last_output*0.3f;  //ÂË²¨£¿
+		pid->output = pid->output*0.7f + pid->last_output*0.3f;  //æ»¤æ³¢ï¼Ÿ
 		if(pid->output>pid->MaxOutput)         
 		{
 			pid->output = pid->MaxOutput;
@@ -135,7 +135,7 @@ static float pid_calculate(PID_TypeDef* pid, float measure, int circle_len)//, i
 	return pid->output;
 }
 
-/*pid½á¹¹Ìå³õÊ¼»¯£¬Ã¿Ò»¸öpid²ÎÊıĞèÒªµ÷ÓÃÒ»´Î-----------------------------------------------------*/
+/*pidç»“æ„ä½“åˆå§‹åŒ–ï¼Œæ¯ä¸€ä¸ªpidå‚æ•°éœ€è¦è°ƒç”¨ä¸€æ¬¡-----------------------------------------------------*/
 void pid_init(PID_TypeDef* pid)
 {
 	pid->f_param_init = pid_param_init;

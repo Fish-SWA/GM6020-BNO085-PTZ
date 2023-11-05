@@ -121,7 +121,7 @@ void HAL_CAN_MspDeInit(CAN_HandleTypeDef* canHandle)
 }
 
 /* USER CODE BEGIN 1 */
-/* CAN总线错误回调函数，这里发生CAN总线错误后必须重启接收中断，否则会导致CAN接收异常 >*/
+/* CAN鎬荤嚎閿欒鍥炶皟鍑芥暟锛岃繖閲屽彂鐢烠AN鎬荤嚎閿欒鍚庡繀椤婚噸鍚帴鏀朵腑鏂紝鍚﹀垯浼氬鑷碈AN鎺ユ敹寮傚父 >*/
 
 void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
 {
