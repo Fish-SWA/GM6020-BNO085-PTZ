@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "bsp_can.h": "c",
+        "pid.h": "c",
+        "stdio.h": "c"
+    }
+}

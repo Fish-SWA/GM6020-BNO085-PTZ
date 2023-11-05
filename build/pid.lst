@@ -1,0 +1,687 @@
+ARM GAS  C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"pid.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.pid_param_init,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	pid_param_init:
+  26              	.LVL0:
+  27              	.LFB130:
+  28              		.file 1 "Core/Src/pid.c"
+   1:Core/Src/pid.c **** /**
+   2:Core/Src/pid.c ****   ******************************************************************************
+   3:Core/Src/pid.c ****   * @file    pid.c
+   4:Core/Src/pid.c ****   * @author  Ginger
+   5:Core/Src/pid.c ****   * @version V1.0.0
+   6:Core/Src/pid.c ****   * @date    2015/11/14
+   7:Core/Src/pid.c ****   * @brief   对每一个pid结构体都要先进行函数的连接，再进行初始化
+   8:Core/Src/pid.c ****   ******************************************************************************
+   9:Core/Src/pid.c ****   * @attention 应该是用二阶差分(d)云台会更加稳定
+  10:Core/Src/pid.c ****   *
+  11:Core/Src/pid.c ****   ******************************************************************************
+  12:Core/Src/pid.c ****   */
+  13:Core/Src/pid.c **** 
+  14:Core/Src/pid.c **** /* Includes ------------------------------------------------------------------*/
+  15:Core/Src/pid.c **** #include "pid.h"
+  16:Core/Src/pid.c **** #include "stm32f4xx.h"
+  17:Core/Src/pid.c **** 
+  18:Core/Src/pid.c **** #define ABS(x)		((x>0)? x: -x) 
+  19:Core/Src/pid.c **** 
+  20:Core/Src/pid.c **** PID_TypeDef pid_pitch,pid_pithch_speed,pid_roll,pid_roll_speed,pid_yaw_speed;
+  21:Core/Src/pid.c **** extern int isMove;
+  22:Core/Src/pid.c **** 
+  23:Core/Src/pid.c **** /*参数初始化--------------------------------------------------------------*/
+  24:Core/Src/pid.c **** static void pid_param_init(
+  25:Core/Src/pid.c **** 	PID_TypeDef * pid, 
+  26:Core/Src/pid.c **** 	PID_ID   id,
+  27:Core/Src/pid.c **** 	uint16_t maxout,
+  28:Core/Src/pid.c **** 	uint16_t intergral_limit,
+  29:Core/Src/pid.c **** 	float deadband,
+  30:Core/Src/pid.c **** 	uint16_t period,
+ARM GAS  C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s 			page 2
+
+
+  31:Core/Src/pid.c **** 	int16_t  max_err,
+  32:Core/Src/pid.c **** 	int16_t  target,
+  33:Core/Src/pid.c **** 
+  34:Core/Src/pid.c **** 	float 	kp, 
+  35:Core/Src/pid.c **** 	float 	ki, 
+  36:Core/Src/pid.c **** 	float 	kd)
+  37:Core/Src/pid.c **** {
+  29              		.loc 1 37 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 12, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  34              		.loc 1 37 1 is_stmt 0 view .LVU1
+  35 0000 07EE902A 		vmov	s15, r2	@ int
+  36 0004 07EE103A 		vmov	s14, r3	@ int
+  38:Core/Src/pid.c **** 	pid->id = id;		
+  37              		.loc 1 38 2 is_stmt 1 view .LVU2
+  38              		.loc 1 38 10 is_stmt 0 view .LVU3
+  39 0008 0170     		strb	r1, [r0]
+  39:Core/Src/pid.c **** 	
+  40:Core/Src/pid.c **** 	pid->ControlPeriod = period;             //没用到
+  40              		.loc 1 40 2 is_stmt 1 view .LVU4
+  41              		.loc 1 40 21 is_stmt 0 view .LVU5
+  42 000a BDF80030 		ldrh	r3, [sp]
+  43              	.LVL1:
+  44              		.loc 1 40 21 view .LVU6
+  45 000e 06EE903A 		vmov	s13, r3	@ int
+  46 0012 F8EE666A 		vcvt.f32.u32	s13, s13
+  47 0016 C0ED116A 		vstr.32	s13, [r0, #68]
+  41:Core/Src/pid.c **** 	pid->DeadBand = deadband;
+  48              		.loc 1 41 2 is_stmt 1 view .LVU7
+  49              		.loc 1 41 16 is_stmt 0 view .LVU8
+  50 001a 80ED100A 		vstr.32	s0, [r0, #64]
+  42:Core/Src/pid.c **** 	pid->IntegralLimit = intergral_limit;
+  51              		.loc 1 42 2 is_stmt 1 view .LVU9
+  52              		.loc 1 42 21 is_stmt 0 view .LVU10
+  53 001e B8EE477A 		vcvt.f32.u32	s14, s14
+  54 0022 80ED0F7A 		vstr.32	s14, [r0, #60]
+  43:Core/Src/pid.c **** 	pid->MaxOutput = maxout;
+  55              		.loc 1 43 2 is_stmt 1 view .LVU11
+  56              		.loc 1 43 17 is_stmt 0 view .LVU12
+  57 0026 F8EE677A 		vcvt.f32.u32	s15, s15
+  58 002a C0ED0E7A 		vstr.32	s15, [r0, #56]
+  44:Core/Src/pid.c **** 	pid->Max_Err = max_err;
+  59              		.loc 1 44 2 is_stmt 1 view .LVU13
+  60              		.loc 1 44 15 is_stmt 0 view .LVU14
+  61 002e BDF90430 		ldrsh	r3, [sp, #4]
+  62 0032 07EE903A 		vmov	s15, r3	@ int
+  63 0036 F8EEE77A 		vcvt.f32.s32	s15, s15
+  64 003a C0ED127A 		vstr.32	s15, [r0, #72]
+  45:Core/Src/pid.c **** 	pid->target = target;
+  65              		.loc 1 45 2 is_stmt 1 view .LVU15
+  66              		.loc 1 45 14 is_stmt 0 view .LVU16
+  67 003e BDF90830 		ldrsh	r3, [sp, #8]
+  68 0042 07EE903A 		vmov	s15, r3	@ int
+  69 0046 F8EEE77A 		vcvt.f32.s32	s15, s15
+  70 004a C0ED017A 		vstr.32	s15, [r0, #4]
+ARM GAS  C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s 			page 3
+
+
+  46:Core/Src/pid.c **** 	
+  47:Core/Src/pid.c **** 	pid->kp = kp;
+  71              		.loc 1 47 2 is_stmt 1 view .LVU17
+  72              		.loc 1 47 10 is_stmt 0 view .LVU18
+  73 004e C0ED030A 		vstr.32	s1, [r0, #12]
+  48:Core/Src/pid.c **** 	pid->ki = ki;
+  74              		.loc 1 48 2 is_stmt 1 view .LVU19
+  75              		.loc 1 48 10 is_stmt 0 view .LVU20
+  76 0052 80ED041A 		vstr.32	s2, [r0, #16]
+  49:Core/Src/pid.c **** 	pid->kd = kd;
+  77              		.loc 1 49 2 is_stmt 1 view .LVU21
+  78              		.loc 1 49 10 is_stmt 0 view .LVU22
+  79 0056 C0ED051A 		vstr.32	s3, [r0, #20]
+  50:Core/Src/pid.c **** 	
+  51:Core/Src/pid.c **** 	pid->output = 0;
+  80              		.loc 1 51 2 is_stmt 1 view .LVU23
+  81              		.loc 1 51 14 is_stmt 0 view .LVU24
+  82 005a 0023     		movs	r3, #0
+  83 005c 0363     		str	r3, [r0, #48]	@ float
+  52:Core/Src/pid.c **** }
+  84              		.loc 1 52 1 view .LVU25
+  85 005e 7047     		bx	lr
+  86              		.cfi_endproc
+  87              	.LFE130:
+  89              		.section	.text.pid_reset,"ax",%progbits
+  90              		.align	1
+  91              		.syntax unified
+  92              		.thumb
+  93              		.thumb_func
+  95              	pid_reset:
+  96              	.LVL2:
+  97              	.LFB131:
+  53:Core/Src/pid.c **** 
+  54:Core/Src/pid.c **** /*中途更改参数设定--------------------------------------------------------------*/
+  55:Core/Src/pid.c **** static void pid_reset(PID_TypeDef * pid, float kp, float ki, float kd)
+  56:Core/Src/pid.c **** {
+  98              		.loc 1 56 1 is_stmt 1 view -0
+  99              		.cfi_startproc
+ 100              		@ args = 0, pretend = 0, frame = 0
+ 101              		@ frame_needed = 0, uses_anonymous_args = 0
+ 102              		@ link register save eliminated.
+  57:Core/Src/pid.c **** 	pid->kp = kp;
+ 103              		.loc 1 57 2 view .LVU27
+ 104              		.loc 1 57 10 is_stmt 0 view .LVU28
+ 105 0000 80ED030A 		vstr.32	s0, [r0, #12]
+  58:Core/Src/pid.c **** 	pid->ki = ki;
+ 106              		.loc 1 58 2 is_stmt 1 view .LVU29
+ 107              		.loc 1 58 10 is_stmt 0 view .LVU30
+ 108 0004 C0ED040A 		vstr.32	s1, [r0, #16]
+  59:Core/Src/pid.c **** 	pid->kd = kd;
+ 109              		.loc 1 59 2 is_stmt 1 view .LVU31
+ 110              		.loc 1 59 10 is_stmt 0 view .LVU32
+ 111 0008 80ED051A 		vstr.32	s2, [r0, #20]
+  60:Core/Src/pid.c **** }
+ 112              		.loc 1 60 1 view .LVU33
+ 113 000c 7047     		bx	lr
+ 114              		.cfi_endproc
+ARM GAS  C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s 			page 4
+
+
+ 115              	.LFE131:
+ 117              		.section	.text.circle_err,"ax",%progbits
+ 118              		.align	1
+ 119              		.global	circle_err
+ 120              		.syntax unified
+ 121              		.thumb
+ 122              		.thumb_func
+ 124              	circle_err:
+ 125              	.LVL3:
+ 126              	.LFB132:
+  61:Core/Src/pid.c **** 
+  62:Core/Src/pid.c **** /*pid计算-----------------------------------------------------------------------*/
+  63:Core/Src/pid.c **** 
+  64:Core/Src/pid.c **** //环形求差的计算(过零处理)
+  65:Core/Src/pid.c **** int circle_err(int val_a, int val_b, int circle_len)
+  66:Core/Src/pid.c **** {
+ 127              		.loc 1 66 1 is_stmt 1 view -0
+ 128              		.cfi_startproc
+ 129              		@ args = 0, pretend = 0, frame = 0
+ 130              		@ frame_needed = 0, uses_anonymous_args = 0
+ 131              		@ link register save eliminated.
+  67:Core/Src/pid.c **** 	if(val_a-val_b > circle_len/2)
+ 132              		.loc 1 67 2 view .LVU35
+ 133              		.loc 1 67 10 is_stmt 0 view .LVU36
+ 134 0000 401A     		subs	r0, r0, r1
+ 135              	.LVL4:
+ 136              		.loc 1 67 29 view .LVU37
+ 137 0002 02EBD273 		add	r3, r2, r2, lsr #31
+ 138              		.loc 1 67 4 view .LVU38
+ 139 0006 B0EB630F 		cmp	r0, r3, asr #1
+ 140 000a 06DC     		bgt	.L6
+  68:Core/Src/pid.c **** 	{
+  69:Core/Src/pid.c **** 		return (val_a-val_b) - circle_len;
+  70:Core/Src/pid.c **** 	}
+  71:Core/Src/pid.c **** 	if(val_a-val_b < -circle_len/2)
+ 141              		.loc 1 71 2 is_stmt 1 view .LVU39
+ 142              		.loc 1 71 30 is_stmt 0 view .LVU40
+ 143 000c 02EBD273 		add	r3, r2, r2, lsr #31
+ 144 0010 5B10     		asrs	r3, r3, #1
+ 145 0012 5B42     		rsbs	r3, r3, #0
+ 146              		.loc 1 71 4 view .LVU41
+ 147 0014 9842     		cmp	r0, r3
+ 148 0016 02DB     		blt	.L7
+ 149              	.L3:
+  72:Core/Src/pid.c **** 	{
+  73:Core/Src/pid.c **** 		return circle_len + (val_a-val_b);
+  74:Core/Src/pid.c **** 	}
+  75:Core/Src/pid.c **** 	return val_a - val_b;
+  76:Core/Src/pid.c **** }
+ 150              		.loc 1 76 1 view .LVU42
+ 151 0018 7047     		bx	lr
+ 152              	.L6:
+  69:Core/Src/pid.c **** 	}
+ 153              		.loc 1 69 3 is_stmt 1 view .LVU43
+  69:Core/Src/pid.c **** 	}
+ 154              		.loc 1 69 24 is_stmt 0 view .LVU44
+ 155 001a 801A     		subs	r0, r0, r2
+ARM GAS  C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s 			page 5
+
+
+ 156 001c 7047     		bx	lr
+ 157              	.L7:
+  73:Core/Src/pid.c **** 	}
+ 158              		.loc 1 73 3 is_stmt 1 view .LVU45
+  73:Core/Src/pid.c **** 	}
+ 159              		.loc 1 73 21 is_stmt 0 view .LVU46
+ 160 001e 1044     		add	r0, r0, r2
+ 161 0020 FAE7     		b	.L3
+ 162              		.cfi_endproc
+ 163              	.LFE132:
+ 165              		.section	.text.pid_calculate,"ax",%progbits
+ 166              		.align	1
+ 167              		.syntax unified
+ 168              		.thumb
+ 169              		.thumb_func
+ 171              	pid_calculate:
+ 172              	.LVL5:
+ 173              	.LFB133:
+  77:Core/Src/pid.c **** 	
+  78:Core/Src/pid.c **** 	
+  79:Core/Src/pid.c **** static float pid_calculate(PID_TypeDef* pid, float measure, int circle_len)//, int16_t target)
+  80:Core/Src/pid.c **** {
+ 174              		.loc 1 80 1 is_stmt 1 view -0
+ 175              		.cfi_startproc
+ 176              		@ args = 0, pretend = 0, frame = 0
+ 177              		@ frame_needed = 0, uses_anonymous_args = 0
+ 178              		.loc 1 80 1 is_stmt 0 view .LVU48
+ 179 0000 38B5     		push	{r3, r4, r5, lr}
+ 180              	.LCFI0:
+ 181              		.cfi_def_cfa_offset 16
+ 182              		.cfi_offset 3, -16
+ 183              		.cfi_offset 4, -12
+ 184              		.cfi_offset 5, -8
+ 185              		.cfi_offset 14, -4
+ 186 0002 2DED048B 		vpush.64	{d8, d9}
+ 187              	.LCFI1:
+ 188              		.cfi_def_cfa_offset 32
+ 189              		.cfi_offset 80, -32
+ 190              		.cfi_offset 81, -28
+ 191              		.cfi_offset 82, -24
+ 192              		.cfi_offset 83, -20
+ 193 0006 0446     		mov	r4, r0
+ 194 0008 B0EE408A 		vmov.f32	s16, s0
+ 195 000c 0D46     		mov	r5, r1
+  81:Core/Src/pid.c **** 
+  82:Core/Src/pid.c ****   //	uint32_t time,lasttime;
+  83:Core/Src/pid.c **** 	pid->lasttime = pid->thistime;
+ 196              		.loc 1 83 2 is_stmt 1 view .LVU49
+ 197              		.loc 1 83 21 is_stmt 0 view .LVU50
+ 198 000e C36C     		ldr	r3, [r0, #76]
+ 199              		.loc 1 83 16 view .LVU51
+ 200 0010 0365     		str	r3, [r0, #80]
+  84:Core/Src/pid.c **** 	pid->thistime = HAL_GetTick();
+ 201              		.loc 1 84 2 is_stmt 1 view .LVU52
+ 202              		.loc 1 84 18 is_stmt 0 view .LVU53
+ 203 0012 FFF7FEFF 		bl	HAL_GetTick
+ 204              	.LVL6:
+ARM GAS  C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s 			page 6
+
+
+ 205              		.loc 1 84 16 view .LVU54
+ 206 0016 E064     		str	r0, [r4, #76]
+  85:Core/Src/pid.c **** 	pid->dtime = pid->thistime-pid->lasttime;
+ 207              		.loc 1 85 2 is_stmt 1 view .LVU55
+ 208              		.loc 1 85 32 is_stmt 0 view .LVU56
+ 209 0018 236D     		ldr	r3, [r4, #80]
+ 210              		.loc 1 85 28 view .LVU57
+ 211 001a C01A     		subs	r0, r0, r3
+ 212              		.loc 1 85 13 view .LVU58
+ 213 001c 84F85400 		strb	r0, [r4, #84]
+  86:Core/Src/pid.c **** 	pid->measure = measure;
+ 214              		.loc 1 86 2 is_stmt 1 view .LVU59
+ 215              		.loc 1 86 15 is_stmt 0 view .LVU60
+ 216 0020 84ED068A 		vstr.32	s16, [r4, #24]
+  87:Core/Src/pid.c ****   //	pid->target = target;
+  88:Core/Src/pid.c **** 		
+  89:Core/Src/pid.c **** 	pid->last_err  = pid->err;
+ 217              		.loc 1 89 2 is_stmt 1 view .LVU61
+ 218              		.loc 1 89 22 is_stmt 0 view .LVU62
+ 219 0024 94ED079A 		vldr.32	s18, [r4, #28]
+ 220              		.loc 1 89 17 view .LVU63
+ 221 0028 84ED089A 		vstr.32	s18, [r4, #32]
+  90:Core/Src/pid.c **** 	pid->last_output = pid->output;
+ 222              		.loc 1 90 2 is_stmt 1 view .LVU64
+ 223              		.loc 1 90 24 is_stmt 0 view .LVU65
+ 224 002c D4ED0C8A 		vldr.32	s17, [r4, #48]
+ 225              		.loc 1 90 19 view .LVU66
+ 226 0030 C4ED0D8A 		vstr.32	s17, [r4, #52]
+  91:Core/Src/pid.c **** 	
+  92:Core/Src/pid.c **** 	//求差部分
+  93:Core/Src/pid.c **** 	if(circle_len == 0)
+ 227              		.loc 1 93 2 is_stmt 1 view .LVU67
+ 228              		.loc 1 93 4 is_stmt 0 view .LVU68
+ 229 0034 002D     		cmp	r5, #0
+ 230 0036 6ED1     		bne	.L9
+  94:Core/Src/pid.c **** 	{
+  95:Core/Src/pid.c **** 		pid->err = pid->target - pid->measure;
+ 231              		.loc 1 95 3 is_stmt 1 view .LVU69
+ 232              		.loc 1 95 17 is_stmt 0 view .LVU70
+ 233 0038 94ED010A 		vldr.32	s0, [r4, #4]
+ 234              		.loc 1 95 26 view .LVU71
+ 235 003c 30EE488A 		vsub.f32	s16, s0, s16
+ 236              	.LVL7:
+ 237              		.loc 1 95 12 view .LVU72
+ 238 0040 84ED078A 		vstr.32	s16, [r4, #28]
+ 239              	.LVL8:
+ 240              	.L10:
+  96:Core/Src/pid.c **** 	}else{
+  97:Core/Src/pid.c **** 		pid->err = circle_err(pid->target, pid->measure, circle_len);
+  98:Core/Src/pid.c **** 		//pid->err = pid->target - pid->measure;
+  99:Core/Src/pid.c **** 		//printf("measure:%d, target:%d, err:%d\n", (int)pid->measure, (int)pid->target, (int)pid->err);
+ 100:Core/Src/pid.c **** 	}
+ 101:Core/Src/pid.c **** 	
+ 102:Core/Src/pid.c **** 	
+ 103:Core/Src/pid.c **** 	//是否进入死区
+ 104:Core/Src/pid.c **** 	if((ABS(pid->err) > pid->DeadBand))
+ 241              		.loc 1 104 2 is_stmt 1 view .LVU73
+ARM GAS  C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s 			page 7
+
+
+ 242              		.loc 1 104 6 is_stmt 0 view .LVU74
+ 243 0044 94ED077A 		vldr.32	s14, [r4, #28]
+ 244 0048 B5EEC07A 		vcmpe.f32	s14, #0
+ 245 004c F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 246 0050 75DD     		ble	.L28
+ 247 0052 F0EE477A 		vmov.f32	s15, s14
+ 248              	.L11:
+ 249              		.loc 1 104 25 discriminator 4 view .LVU75
+ 250 0056 D4ED106A 		vldr.32	s13, [r4, #64]
+ 251              		.loc 1 104 4 discriminator 4 view .LVU76
+ 252 005a F4EEE76A 		vcmpe.f32	s13, s15
+ 253 005e F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 254 0062 53D5     		bpl	.L12
+ 105:Core/Src/pid.c **** 	{
+ 106:Core/Src/pid.c **** 		pid->pout = pid->kp * pid->err;
+ 255              		.loc 1 106 3 is_stmt 1 view .LVU77
+ 256              		.loc 1 106 18 is_stmt 0 view .LVU78
+ 257 0064 D4ED036A 		vldr.32	s13, [r4, #12]
+ 258              		.loc 1 106 23 view .LVU79
+ 259 0068 67EE266A 		vmul.f32	s13, s14, s13
+ 260              		.loc 1 106 13 view .LVU80
+ 261 006c C4ED096A 		vstr.32	s13, [r4, #36]
+ 107:Core/Src/pid.c **** 		pid->iout += (pid->ki * pid->err);
+ 262              		.loc 1 107 3 is_stmt 1 view .LVU81
+ 263              		.loc 1 107 20 is_stmt 0 view .LVU82
+ 264 0070 94ED046A 		vldr.32	s12, [r4, #16]
+ 265              		.loc 1 107 25 view .LVU83
+ 266 0074 27EE066A 		vmul.f32	s12, s14, s12
+ 267              		.loc 1 107 13 view .LVU84
+ 268 0078 D4ED0A7A 		vldr.32	s15, [r4, #40]
+ 269 007c 36EE276A 		vadd.f32	s12, s12, s15
+ 270 0080 84ED0A6A 		vstr.32	s12, [r4, #40]
+ 108:Core/Src/pid.c **** 		
+ 109:Core/Src/pid.c **** 
+ 110:Core/Src/pid.c **** 		pid->dout =  pid->kd * (pid->err - pid->last_err); 
+ 271              		.loc 1 110 3 is_stmt 1 view .LVU85
+ 272              		.loc 1 110 19 is_stmt 0 view .LVU86
+ 273 0084 D4ED057A 		vldr.32	s15, [r4, #20]
+ 274              		.loc 1 110 36 view .LVU87
+ 275 0088 37EE497A 		vsub.f32	s14, s14, s18
+ 276              		.loc 1 110 24 view .LVU88
+ 277 008c 67EE877A 		vmul.f32	s15, s15, s14
+ 278              		.loc 1 110 13 view .LVU89
+ 279 0090 C4ED0B7A 		vstr.32	s15, [r4, #44]
+ 111:Core/Src/pid.c **** 		
+ 112:Core/Src/pid.c **** 		//积分是否超出限制
+ 113:Core/Src/pid.c **** 		if(pid->iout > pid->IntegralLimit)
+ 280              		.loc 1 113 3 is_stmt 1 view .LVU90
+ 281              		.loc 1 113 21 is_stmt 0 view .LVU91
+ 282 0094 94ED0F7A 		vldr.32	s14, [r4, #60]
+ 283              		.loc 1 113 5 view .LVU92
+ 284 0098 B4EEC76A 		vcmpe.f32	s12, s14
+ 285 009c F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 286 00a0 01DD     		ble	.L14
+ 114:Core/Src/pid.c **** 			pid->iout = pid->IntegralLimit;
+ 287              		.loc 1 114 4 is_stmt 1 view .LVU93
+ 288              		.loc 1 114 14 is_stmt 0 view .LVU94
+ARM GAS  C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s 			page 8
+
+
+ 289 00a2 84ED0A7A 		vstr.32	s14, [r4, #40]
+ 290              	.L14:
+ 115:Core/Src/pid.c **** 		if(pid->iout < - pid->IntegralLimit)
+ 291              		.loc 1 115 3 is_stmt 1 view .LVU95
+ 292              		.loc 1 115 9 is_stmt 0 view .LVU96
+ 293 00a6 94ED0A6A 		vldr.32	s12, [r4, #40]
+ 294              		.loc 1 115 18 view .LVU97
+ 295 00aa B1EE477A 		vneg.f32	s14, s14
+ 296              		.loc 1 115 5 view .LVU98
+ 297 00ae B4EEC76A 		vcmpe.f32	s12, s14
+ 298 00b2 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 299 00b6 01D5     		bpl	.L16
+ 116:Core/Src/pid.c **** 			pid->iout = - pid->IntegralLimit;
+ 300              		.loc 1 116 4 is_stmt 1 view .LVU99
+ 301              		.loc 1 116 14 is_stmt 0 view .LVU100
+ 302 00b8 84ED0A7A 		vstr.32	s14, [r4, #40]
+ 303              	.L16:
+ 117:Core/Src/pid.c **** 		
+ 118:Core/Src/pid.c **** 		//pid输出和
+ 119:Core/Src/pid.c **** 		pid->output = pid->pout + pid->iout + pid->dout;
+ 304              		.loc 1 119 3 is_stmt 1 view .LVU101
+ 305              		.loc 1 119 32 is_stmt 0 view .LVU102
+ 306 00bc 94ED0A7A 		vldr.32	s14, [r4, #40]
+ 307              		.loc 1 119 27 view .LVU103
+ 308 00c0 76EE876A 		vadd.f32	s13, s13, s14
+ 309              		.loc 1 119 39 view .LVU104
+ 310 00c4 77EEA67A 		vadd.f32	s15, s15, s13
+ 311              		.loc 1 119 15 view .LVU105
+ 312 00c8 C4ED0C7A 		vstr.32	s15, [r4, #48]
+ 120:Core/Src/pid.c **** 		
+ 121:Core/Src/pid.c **** 
+ 122:Core/Src/pid.c **** 		pid->output = pid->output*0.7f + pid->last_output*0.3f;  //滤波？
+ 313              		.loc 1 122 3 is_stmt 1 view .LVU106
+ 314              		.loc 1 122 28 is_stmt 0 view .LVU107
+ 315 00cc 9FED1D7A 		vldr.32	s14, .L29
+ 316 00d0 67EE877A 		vmul.f32	s15, s15, s14
+ 317              		.loc 1 122 52 view .LVU108
+ 318 00d4 9FED1C7A 		vldr.32	s14, .L29+4
+ 319 00d8 68EE878A 		vmul.f32	s17, s17, s14
+ 320              		.loc 1 122 34 view .LVU109
+ 321 00dc 77EEA87A 		vadd.f32	s15, s15, s17
+ 322              		.loc 1 122 15 view .LVU110
+ 323 00e0 C4ED0C7A 		vstr.32	s15, [r4, #48]
+ 123:Core/Src/pid.c **** 		if(pid->output>pid->MaxOutput)         
+ 324              		.loc 1 123 3 is_stmt 1 view .LVU111
+ 325              		.loc 1 123 21 is_stmt 0 view .LVU112
+ 326 00e4 94ED0E7A 		vldr.32	s14, [r4, #56]
+ 327              		.loc 1 123 5 view .LVU113
+ 328 00e8 F4EEC77A 		vcmpe.f32	s15, s14
+ 329 00ec F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 330 00f0 01DD     		ble	.L18
+ 124:Core/Src/pid.c **** 		{
+ 125:Core/Src/pid.c **** 			pid->output = pid->MaxOutput;
+ 331              		.loc 1 125 4 is_stmt 1 view .LVU114
+ 332              		.loc 1 125 16 is_stmt 0 view .LVU115
+ 333 00f2 84ED0C7A 		vstr.32	s14, [r4, #48]
+ 334              	.L18:
+ARM GAS  C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s 			page 9
+
+
+ 126:Core/Src/pid.c **** 		}
+ 127:Core/Src/pid.c **** 		if(pid->output < -(pid->MaxOutput))
+ 335              		.loc 1 127 3 is_stmt 1 view .LVU116
+ 336              		.loc 1 127 9 is_stmt 0 view .LVU117
+ 337 00f6 D4ED0C7A 		vldr.32	s15, [r4, #48]
+ 338              		.loc 1 127 20 view .LVU118
+ 339 00fa B1EE477A 		vneg.f32	s14, s14
+ 340              		.loc 1 127 5 view .LVU119
+ 341 00fe F4EEC77A 		vcmpe.f32	s15, s14
+ 342 0102 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 343 0106 01D5     		bpl	.L12
+ 128:Core/Src/pid.c **** 		{
+ 129:Core/Src/pid.c **** 			pid->output = -(pid->MaxOutput);
+ 344              		.loc 1 129 4 is_stmt 1 view .LVU120
+ 345              		.loc 1 129 16 is_stmt 0 view .LVU121
+ 346 0108 84ED0C7A 		vstr.32	s14, [r4, #48]
+ 347              	.L12:
+ 130:Core/Src/pid.c **** 		}
+ 131:Core/Src/pid.c **** 	
+ 132:Core/Src/pid.c **** 	}
+ 133:Core/Src/pid.c **** 
+ 134:Core/Src/pid.c **** 
+ 135:Core/Src/pid.c **** 	return pid->output;
+ 348              		.loc 1 135 2 is_stmt 1 view .LVU122
+ 136:Core/Src/pid.c **** }
+ 349              		.loc 1 136 1 is_stmt 0 view .LVU123
+ 350 010c 94ED0C0A 		vldr.32	s0, [r4, #48]
+ 351 0110 BDEC048B 		vldm	sp!, {d8-d9}
+ 352              	.LCFI2:
+ 353              		.cfi_remember_state
+ 354              		.cfi_restore 82
+ 355              		.cfi_restore 83
+ 356              		.cfi_restore 80
+ 357              		.cfi_restore 81
+ 358              		.cfi_def_cfa_offset 16
+ 359 0114 38BD     		pop	{r3, r4, r5, pc}
+ 360              	.LVL9:
+ 361              	.L9:
+ 362              	.LCFI3:
+ 363              		.cfi_restore_state
+  97:Core/Src/pid.c **** 		//pid->err = pid->target - pid->measure;
+ 364              		.loc 1 97 3 is_stmt 1 view .LVU124
+  97:Core/Src/pid.c **** 		//pid->err = pid->target - pid->measure;
+ 365              		.loc 1 97 28 is_stmt 0 view .LVU125
+ 366 0116 D4ED017A 		vldr.32	s15, [r4, #4]
+  97:Core/Src/pid.c **** 		//pid->err = pid->target - pid->measure;
+ 367              		.loc 1 97 14 view .LVU126
+ 368 011a 2A46     		mov	r2, r5
+ 369 011c BDEEC87A 		vcvt.s32.f32	s14, s16
+ 370 0120 17EE101A 		vmov	r1, s14	@ int
+ 371 0124 FDEEE77A 		vcvt.s32.f32	s15, s15
+ 372 0128 17EE900A 		vmov	r0, s15	@ int
+ 373 012c FFF7FEFF 		bl	circle_err
+ 374              	.LVL10:
+ 375 0130 07EE900A 		vmov	s15, r0	@ int
+  97:Core/Src/pid.c **** 		//pid->err = pid->target - pid->measure;
+ 376              		.loc 1 97 12 view .LVU127
+ARM GAS  C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s 			page 10
+
+
+ 377 0134 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 378 0138 C4ED077A 		vstr.32	s15, [r4, #28]
+ 379 013c 82E7     		b	.L10
+ 380              	.LVL11:
+ 381              	.L28:
+ 104:Core/Src/pid.c **** 	{
+ 382              		.loc 1 104 6 discriminator 2 view .LVU128
+ 383 013e F1EE477A 		vneg.f32	s15, s14
+ 384 0142 88E7     		b	.L11
+ 385              	.L30:
+ 386              		.align	2
+ 387              	.L29:
+ 388 0144 3333333F 		.word	1060320051
+ 389 0148 9A99993E 		.word	1050253722
+ 390              		.cfi_endproc
+ 391              	.LFE133:
+ 393              		.section	.text.pid_init,"ax",%progbits
+ 394              		.align	1
+ 395              		.global	pid_init
+ 396              		.syntax unified
+ 397              		.thumb
+ 398              		.thumb_func
+ 400              	pid_init:
+ 401              	.LVL12:
+ 402              	.LFB134:
+ 137:Core/Src/pid.c **** 
+ 138:Core/Src/pid.c **** /*pid结构体初始化，每一个pid参数需要调用一次-----------------------------------------------------*/
+ 139:Core/Src/pid.c **** void pid_init(PID_TypeDef* pid)
+ 140:Core/Src/pid.c **** {
+ 403              		.loc 1 140 1 is_stmt 1 view -0
+ 404              		.cfi_startproc
+ 405              		@ args = 0, pretend = 0, frame = 0
+ 406              		@ frame_needed = 0, uses_anonymous_args = 0
+ 407              		@ link register save eliminated.
+ 141:Core/Src/pid.c **** 	pid->f_param_init = pid_param_init;
+ 408              		.loc 1 141 2 view .LVU130
+ 409              		.loc 1 141 20 is_stmt 0 view .LVU131
+ 410 0000 034B     		ldr	r3, .L32
+ 411 0002 8365     		str	r3, [r0, #88]
+ 142:Core/Src/pid.c **** 	pid->f_pid_reset = pid_reset;
+ 412              		.loc 1 142 2 is_stmt 1 view .LVU132
+ 413              		.loc 1 142 19 is_stmt 0 view .LVU133
+ 414 0004 034B     		ldr	r3, .L32+4
+ 415 0006 C365     		str	r3, [r0, #92]
+ 143:Core/Src/pid.c **** 	pid->f_cal_pid = pid_calculate;
+ 416              		.loc 1 143 2 is_stmt 1 view .LVU134
+ 417              		.loc 1 143 17 is_stmt 0 view .LVU135
+ 418 0008 034B     		ldr	r3, .L32+8
+ 419 000a 0366     		str	r3, [r0, #96]
+ 144:Core/Src/pid.c **** }
+ 420              		.loc 1 144 1 view .LVU136
+ 421 000c 7047     		bx	lr
+ 422              	.L33:
+ 423 000e 00BF     		.align	2
+ 424              	.L32:
+ 425 0010 00000000 		.word	pid_param_init
+ 426 0014 00000000 		.word	pid_reset
+ARM GAS  C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s 			page 11
+
+
+ 427 0018 00000000 		.word	pid_calculate
+ 428              		.cfi_endproc
+ 429              	.LFE134:
+ 431              		.global	pid_yaw_speed
+ 432              		.global	pid_roll_speed
+ 433              		.global	pid_roll
+ 434              		.global	pid_pithch_speed
+ 435              		.global	pid_pitch
+ 436              		.section	.bss.pid_pitch,"aw",%nobits
+ 437              		.align	2
+ 440              	pid_pitch:
+ 441 0000 00000000 		.space	100
+ 441      00000000 
+ 441      00000000 
+ 441      00000000 
+ 441      00000000 
+ 442              		.section	.bss.pid_pithch_speed,"aw",%nobits
+ 443              		.align	2
+ 446              	pid_pithch_speed:
+ 447 0000 00000000 		.space	100
+ 447      00000000 
+ 447      00000000 
+ 447      00000000 
+ 447      00000000 
+ 448              		.section	.bss.pid_roll,"aw",%nobits
+ 449              		.align	2
+ 452              	pid_roll:
+ 453 0000 00000000 		.space	100
+ 453      00000000 
+ 453      00000000 
+ 453      00000000 
+ 453      00000000 
+ 454              		.section	.bss.pid_roll_speed,"aw",%nobits
+ 455              		.align	2
+ 458              	pid_roll_speed:
+ 459 0000 00000000 		.space	100
+ 459      00000000 
+ 459      00000000 
+ 459      00000000 
+ 459      00000000 
+ 460              		.section	.bss.pid_yaw_speed,"aw",%nobits
+ 461              		.align	2
+ 464              	pid_yaw_speed:
+ 465 0000 00000000 		.space	100
+ 465      00000000 
+ 465      00000000 
+ 465      00000000 
+ 465      00000000 
+ 466              		.text
+ 467              	.Letext0:
+ 468              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 469              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 470              		.file 4 "Core/Inc/pid.h"
+ 471              		.file 5 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h"
+ARM GAS  C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s 			page 12
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 pid.c
+C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s:20     .text.pid_param_init:00000000 $t
+C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s:25     .text.pid_param_init:00000000 pid_param_init
+C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s:90     .text.pid_reset:00000000 $t
+C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s:95     .text.pid_reset:00000000 pid_reset
+C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s:118    .text.circle_err:00000000 $t
+C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s:124    .text.circle_err:00000000 circle_err
+C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s:166    .text.pid_calculate:00000000 $t
+C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s:171    .text.pid_calculate:00000000 pid_calculate
+C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s:388    .text.pid_calculate:00000144 $d
+C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s:394    .text.pid_init:00000000 $t
+C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s:400    .text.pid_init:00000000 pid_init
+C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s:425    .text.pid_init:00000010 $d
+C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s:464    .bss.pid_yaw_speed:00000000 pid_yaw_speed
+C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s:458    .bss.pid_roll_speed:00000000 pid_roll_speed
+C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s:452    .bss.pid_roll:00000000 pid_roll
+C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s:446    .bss.pid_pithch_speed:00000000 pid_pithch_speed
+C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s:440    .bss.pid_pitch:00000000 pid_pitch
+C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s:437    .bss.pid_pitch:00000000 $d
+C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s:443    .bss.pid_pithch_speed:00000000 $d
+C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s:449    .bss.pid_roll:00000000 $d
+C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s:455    .bss.pid_roll_speed:00000000 $d
+C:\Users\FIsh\AppData\Local\Temp\ccwi21aK.s:461    .bss.pid_yaw_speed:00000000 $d
+
+UNDEFINED SYMBOLS
+HAL_GetTick
