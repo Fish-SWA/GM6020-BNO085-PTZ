@@ -16,6 +16,9 @@ extern float IMU_Angle[3];         //转化为浮点的陀螺仪欧拉角
 extern PID_TypeDef abs_pid[2];           //绝对角度（自稳，陀螺仪）
 extern PID_TypeDef motor_pid[4]; //速度环参数
 extern PID_TypeDef angle_pid[2]; //位置环参数
+																 //
+extern float ABS_Gimbal_angle[2];  //云台绝对角度(自稳) {yaw, pitch}, 0-8192 3400-6000
+extern int16_t ABS_IMU_angle[2];   //归一化之后的IMU角度，用于自稳 {yaw, pitch}, 0-8192
 
 void Abs_angle_control_loop();
 void Rel_angle_control_loop();
