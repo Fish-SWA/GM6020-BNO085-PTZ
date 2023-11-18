@@ -5,12 +5,12 @@ PID_TypeDef angle_pid[2]; //位置环参数
 
 
 PID_TypeDef abs_pid[2];           //绝对角度（自稳，陀螺仪）
-float ABS_Gimbal_angle[2] = {0};  //云台绝对角度(自稳) {yaw, pitch}, 0-8192 3400-6000
+float ABS_Gimbal_angle[2] = {8200,8100};  //云台绝对角度(自稳) {yaw, pitch}, 0-8192 3400-6000
 int16_t ABS_IMU_angle[2] = {0};   //归一化之后的IMU角度，用于自稳 {yaw, pitch}, 0-8192
 int16_t IMU_Angle_Raw[3] = {0};   //接收到的陀螺仪欧拉角
 float IMU_Angle[3] = {0};         //转化为浮点的陀螺仪欧拉角
 
-int16_t Gimbal_angle[2] = {7500, 4800};   //云台角度设定 {yaw, pitch}，编码器
+int16_t Gimbal_angle[2] = {0, 0};   //云台角度设定 {yaw, pitch}，编码器
 
 
 int i = 0;
@@ -43,7 +43,7 @@ void Abs_angle_control_loop()
 
 
   set_moto_current(&hcan1, motor_pid[0].output, motor_pid[1].output, 0, 0);
-  printf("%d, %d\n", moto_chassis[motor_ID].angle, ABS_IMU_angle[motor_ID]);
+  /**printf("%d, %d\n", moto_chassis[motor_ID].angle, ABS_IMU_angle[motor_ID]);*/
   HAL_Delay(1);
 }
 
@@ -74,8 +74,8 @@ void Rel_angle_control_loop()
     motor_pid[motor_ID].f_cal_pid(&motor_pid[motor_ID],moto_chassis[motor_ID].speed_rpm, 0);
 
     set_moto_current(&hcan1, motor_pid[0].output, motor_pid[1].output, 0, 0);
-    printf("%d, %d\n", moto_chassis[0].angle, moto_chassis[1].angle);
-    printf("%f\n", IMU_Angle[0]);
+    /**printf("%d, %d\n", moto_chassis[0].angle, moto_chassis[1].angle);*/
+    /**printf("%f\n", IMU_Angle[0]);*/
     HAL_Delay(1); //1000hz
 }
 
@@ -98,7 +98,7 @@ void Abs_angle_PID_test_loop(int motor_ID)
   //printf("%d\n", moto_chassis[0].speed_rpm);
   //printf("%d\n", moto_chassis[0].total_angle);
   //printf("%d, %f, %f\n", ABS_IMU_angle[motor_ID], abs_pid[motor_ID].output, motor_pid[motor_ID].output);
-  printf("%d, %d\n", moto_chassis[motor_ID].angle, ABS_IMU_angle[motor_ID]);
+  /**printf("%d, %d\n", moto_chassis[motor_ID].angle, ABS_IMU_angle[motor_ID]);*/
   HAL_Delay(1);
 }
 
@@ -117,14 +117,14 @@ void Rel_angle_PID_test_loop(int motor_ID)
   //set_moto_current(&hcan1, 0, 0, 0, 0);
   //printf("%d\n", moto_chassis[0].speed_rpm);
   //printf("%d\n", moto_chassis[0].total_angle);
-  printf("%f, ", (float)j);
+  /**printf("%f, ", (float)j);*/
   HAL_Delay(1);
-  printf("%d, %d, %d, %d, %f, %f, %d\n", 
-                    speed_set, moto_chassis[motor_ID].angle, 
-                    (int)motor_pid[motor_ID].output, 
-                    (int)motor_pid[motor_ID].iout, 
-                    angle_pid[motor_ID].output, 
-                    IMU_Angle[motor_ID]);
+  /**printf("%d, %d, %d, %d, %f, %f, %d\n", */
+  /**                  speed_set, moto_chassis[motor_ID].angle, */
+  /**                  (int)motor_pid[motor_ID].output, */
+  /**                  (int)motor_pid[motor_ID].iout, */
+  /**                  angle_pid[motor_ID].output, */
+  /**                  IMU_Angle[motor_ID]);*/
 }
 
 //速度环科学调参（编码器角速度）
@@ -137,8 +137,8 @@ void speed_loop_PID_tuning(int motor_ID)
 
   if(i >= 800) i = 0;
 
-  printf("%f, ", (float)j);
-  printf("%d, %d\n", current, speed);
+  /**printf("%f, ", (float)j);*/
+  /**printf("%d, %d\n", current, speed);*/
   if(motor_ID == 0) set_moto_current(&hcan1, current, 0, 0, 0);
   if(motor_ID == 1) set_moto_current(&hcan1, 0, current, 0, 0);
 }
@@ -159,8 +159,8 @@ void Rel_angleloop_PID_tuning(int motor_ID)
   //set_moto_current(&hcan1, 0, 0, 0, 0);
   //printf("%d\n", moto_chassis[0].speed_rpm);
   //printf("%d\n", moto_chassis[0].total_angle);
-  printf("%f, ", (float)j);
-  printf("%d, %d\n", speed_set, moto_chassis[motor_ID].total_angle);
+  /**printf("%f, ", (float)j);*/
+  /**printf("%d, %d\n", speed_set, moto_chassis[motor_ID].total_angle);*/
 }
 
 //陀螺仪位置环科学调参
@@ -183,7 +183,7 @@ void Abs_anglelop_PID_tuning(int motor_ID)
   //set_moto_current(&hcan1, 0, 0, 0, 0);
   //printf("%d\n", moto_chassis[0].speed_rpm);
   //printf("%d\n", moto_chassis[0].total_angle);
-  printf("%f, ", (float)j);
-  printf("%d, %d\n", speed_set, ABS_IMU_angle[motor_ID]);
+  /**printf("%f, ", (float)j);*/
+  /**printf("%d, %d\n", speed_set, ABS_IMU_angle[motor_ID]);*/
 }
 
