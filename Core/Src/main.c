@@ -42,6 +42,16 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 #define printf(...) cprintf(&huart1, __VA_ARGS__)
+
+typedef struct
+{
+  uint8_t header;
+  uint8_t cmd_id;
+  float value;
+  uint8_t end;
+}__attribute__((packed)) Rx_packet;
+
+Rx_packet rxBuffer;   //串口接收包
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -167,6 +177,8 @@ int main(void) {
 	int nan_f = 0;
   int speed, current = 0;
 
+  HAL_UART_Receive_IT(&huart1, &rxBuffer, 7);
+
   while (1) {
     /* USER CODE END WHILE */
 
@@ -201,11 +213,6 @@ int main(void) {
         break;
     }
 
-    /*串口接收处理*/
-    Gimbal_angle[0] = 600;
-    Gimbal_angle[1] = 4000;
-
-
     HAL_Delay(1);
 
   // set_moto_current(&hcan1, 3500, 0, 0, 0, 0x1FF);   //6020
@@ -218,6 +225,7 @@ int main(void) {
     }
     i++;
     j++;
+    HAL_UART_Receive_IT(&huart1, &rxBuffer, 7);
   }
   /* USER CODE END 3 */
 }
@@ -274,6 +282,22 @@ int fgetc(FILE *f) {
   uint8_t ch = 0;
   HAL_UART_Receive(&huart1, &ch, 1, 0xffff);
   return ch;
+}
+
+/*串口接收处理*/
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+  float decodedData = 0;
+    // Check frame header and footer
+    if (rxBuffer.header == 0x5C) {
+      if(rxBuffer.cmd_id == 2){
+        Gimbal_angle[0] = (int)rxBuffer.value;
+        printf("set speed to %d\n", Gimbal_angle[0]);
+      }else if(rxBuffer.cmd_id == 1){
+        Gimbal_angle[1] = (int)rxBuffer.value;
+        printf("set angle to %d\n", Gimbal_angle[1]);
+      }
+    }
+  HAL_UART_Receive_IT(&huart1, &rxBuffer, 7);
 }
 
 void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *hi2c) {

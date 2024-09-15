@@ -21,7 +21,7 @@ extern PID_TypeDef angle_pid[2]; //位置环参数
 extern float ABS_Gimbal_angle[2];  //云台绝对角度(自稳) {yaw, pitch}, 0-8192 3400-6000
 extern int16_t ABS_IMU_angle[2];   //归一化之后的IMU角度，用于自稳 {yaw, pitch}, 0-8192
 /*改为舵轮组状态输入， 0->3508速度(rpm), 1->6020角度*/
-extern int16_t Gimbal_angle[2] = {500,8100}; 
+extern int16_t Gimbal_angle[2]; 
 
 void Abs_angle_control_loop();
 void Rel_angle_control_loop();
