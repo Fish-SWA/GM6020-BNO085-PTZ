@@ -3,6 +3,7 @@
         "bsp_can.h": "c",
         "pid.h": "c",
         "stdio.h": "c",
-        "can.h": "c"
+        "can.h": "c",
+        "package.h": "c"
     }
 }

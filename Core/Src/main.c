@@ -145,7 +145,7 @@ int main(void) {
                             0, 8000, 112.73442566396369, 7.347659387059064, 0);
   pid_init(&angle_pid[1]); // 位置环
   angle_pid[1].f_param_init(&angle_pid[1], PID_Speed, 500, 500, 0, 0, 4000, 0,
-                            0.6745661429894514, 0.010929750727867575, 9.989887536853216 * 0.1);
+                            0.6745661429894514, 0.010929750727867575, 9.989887536853216 * 0.04);
   
   //以下不使用
   pid_init(&abs_pid[1]); // 位置环（自稳）
@@ -171,9 +171,9 @@ int main(void) {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    switch (REL_ANGLE_PID_TEST) {
+    switch (REL_ANGLE_STABLE_MODE) {
       case SPEED_PID_TUNING:
-        speed_loop_PID_tuning(1);
+        speed_loop_PID_tuning(1);     //速度环调定
         break;
 
       case ABS_ANGLE_PID_TUNING:
@@ -181,7 +181,7 @@ int main(void) {
         break;
 
       case REL_ANGLE_PID_TUNING:
-        Rel_angleloop_PID_tuning(1);
+        Rel_angleloop_PID_tuning(1);  //位置环调定 & 速度环测试
         break;
 
       case ABS_ANGLE_PID_TEST:
@@ -189,7 +189,7 @@ int main(void) {
         break;
 
       case REL_ANGLE_PID_TEST:
-        Rel_angle_PID_test_loop(1);
+        Rel_angle_PID_test_loop(1);   //位置环测试
         break;
 
       case ABS_ANGLE_STABLE_MODE:
@@ -197,10 +197,15 @@ int main(void) {
         break;
 
       case REL_ANGLE_STABLE_MODE:
-        Rel_angle_control_loop();
+        Rel_angle_control_loop();     //闭环控制模式
         break;
     }
-    
+
+    /*串口接收处理*/
+    Gimbal_angle[0] = 600;
+    Gimbal_angle[1] = 4000;
+
+
     HAL_Delay(1);
 
   // set_moto_current(&hcan1, 3500, 0, 0, 0, 0x1FF);   //6020

@@ -21,12 +21,14 @@ PID_TypeDef angle_pid[2]; //位置环参数
 
 
 PID_TypeDef abs_pid[2];           //绝对角度（自稳，陀螺仪）
-float ABS_Gimbal_angle[2] = {8200,8100};  //云台绝对角度(自稳) {yaw, pitch}, 0-8192 3400-6000
+
+float ABS_Gimbal_angle[2] = {500,8100};
 int16_t ABS_IMU_angle[2] = {0};   //归一化之后的IMU角度，用于自稳 {yaw, pitch}, 0-8192
 int16_t IMU_Angle_Raw[3] = {0};   //接收到的陀螺仪欧拉角
 float IMU_Angle[3] = {0};         //转化为浮点的陀螺仪欧拉角
 
-int16_t Gimbal_angle[2] = {0, 0};   //云台角度设定 {yaw, pitch}，编码器
+/*改为舵轮组状态输入， 0->3508速度(rpm), 1->6020角度*/
+int16_t Gimbal_angle[2] = {500,8100}; 
 
 
 int i = 0;
@@ -77,17 +79,19 @@ void Rel_angle_control_loop()
   else if(Gimbal_angle[0] < 0) Gimbal_angle[0] = 8191;
     //用PID计算电流
     //这里用for会有奇怪的问题，暂时展开
+    //3508， 不使用位置环，Gimbal_angle->速度
     int motor_ID = 0;
-    angle_pid[motor_ID].target = Gimbal_angle[0];
-    angle_pid[motor_ID].f_cal_pid(&angle_pid[motor_ID], moto_chassis[motor_ID].angle, 8192);
-    motor_pid[motor_ID].target = angle_pid[motor_ID].output;
+    motor_pid[motor_ID].target = Gimbal_angle[0];
     motor_pid[motor_ID].f_cal_pid(&motor_pid[motor_ID],moto_chassis[motor_ID].speed_rpm, 0);
-
+    //6020
     motor_ID = 1;
     angle_pid[motor_ID].target = Gimbal_angle[1];
     angle_pid[motor_ID].f_cal_pid(&angle_pid[motor_ID], moto_chassis[motor_ID].angle, 8192);
     motor_pid[motor_ID].target = angle_pid[motor_ID].output; 																							
     motor_pid[motor_ID].f_cal_pid(&motor_pid[motor_ID],moto_chassis[motor_ID].speed_rpm, 0);
+
+    set_moto_current(&hcan1, motor_pid[0].output, 0, 0, 0, 0x200);          //3508
+    set_moto_current(&hcan1, motor_pid[1].output, 0, 0, 0, 0x1FF);          //6020
 
     // set_moto_current(&hcan1, motor_pid[0].output, motor_pid[1].output, 0, 0);
     /**printf("%d, %d\n", moto_chassis[0].angle, moto_chassis[1].angle);*/
