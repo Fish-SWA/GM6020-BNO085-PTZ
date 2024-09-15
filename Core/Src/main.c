@@ -127,10 +127,11 @@ int main(void) {
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  // YAW轴PID
+  // 3508 PID
   pid_init(&motor_pid[0]); // 速度环
   motor_pid[0].f_param_init(&motor_pid[0], PID_Speed, CURRENT_LIMIT, 5000, 0, 0,
-                            0, 8000, 61.4656753, 0.6697404, 0);
+                            0, 8000, 9.514198185530965, 0.35996801530663863, 0);
+  //以下不使用
   pid_init(&angle_pid[0]); // 位置环（相对位置）
   angle_pid[0].f_param_init(&angle_pid[0], PID_Speed, 300, 300, 0, 0, 4000, 0,
                             1.3713, 0.00495369, 94.8474 * 0);
@@ -138,13 +139,15 @@ int main(void) {
   abs_pid[0].f_param_init(&abs_pid[0], PID_Speed, 300, 300, 0, 0, 4000, 0, -0.9,
                           -0.003, -3);
 
-  // Pitch轴PID
+  // 6020 PID
   pid_init(&motor_pid[1]); // 速度环
   motor_pid[1].f_param_init(&motor_pid[1], PID_Speed, CURRENT_LIMIT, 5000, 0, 0,
                             0, 8000, 4.01239768, 3.0348503, 0);
-  pid_init(&angle_pid[1]); // 位置环（相对位置）
+  pid_init(&angle_pid[1]); // 位置环
   angle_pid[1].f_param_init(&angle_pid[1], PID_Speed, 500, 500, 0, 0, 4000, 0,
                             1.27137, 0.01084, 27.877753 * 0.4);
+  
+  //以下不使用
   pid_init(&abs_pid[1]); // 位置环（自稳）
   abs_pid[1].f_param_init(&abs_pid[1], PID_Speed, 300, 300, 0, 0, 4000, 0, 0.5,
                           0, 10);
@@ -162,77 +165,46 @@ int main(void) {
 	Vec3d aim_pos = {0};
 	float yaw,pitch;
 	int nan_f = 0;
+  int speed, current = 0;
 
   while (1) {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    USBD_Interface_fops_FS.Receive((uint8_t *)buf_r, &size);
-    fromVector((uint8_t *)buf_r, &rp);
-		aim_pos.x = rp.x;
-		aim_pos.y = rp.y;
-		aim_pos.z = rp.z;
-		float l = rc_norm(&aim_pos);
+    switch (SPEED_PID_TUNING) {
+      case SPEED_PID_TUNING:
+        speed_loop_PID_tuning(1);
+        break;
 
-		yaw = atan(aim_pos.y/aim_pos.x);
-		pitch = asin(aim_pos.z/l);
+      case ABS_ANGLE_PID_TUNING:
+        Abs_anglelop_PID_tuning(0);
+        break;
 
-		sp.yaw = M_PI * (-IMU_Angle[2]+90)/180;
-		sp.pitch = M_PI * (-IMU_Angle[0] + 180)/180;
-		sp.roll = M_PI * IMU_Angle[1]/180;
-    CDC_Transmit_FS((uint8_t *)&sp, sizeof(struct SendPacket));
+      case REL_ANGLE_PID_TUNING:
+        Rel_angleloop_PID_tuning(0);
+        break;
 
-		printf("yaw %lf %lf\n",yaw, sp.yaw + 2 * M_PI);
-		if(isnan(yaw)){
-				printf("NANANANAN\n");
-		}
-		if(ABS_Gimbal_angle[0] >= 8191)
-				ABS_Gimbal_angle[0] = 0;
-		else if(ABS_Gimbal_angle <= 0)
-				ABS_Gimbal_angle[0] = 8191;
-		else if(isnan(ABS_Gimbal_angle[0]) && nan_f == 0){
-				nan_f = 1;
-				ABS_Gimbal_angle[0] = 7500;
-		} else nan_f =0;
+      case ABS_ANGLE_PID_TEST:
+        Abs_angle_PID_test_loop(0);
+        break;
 
-		if(nan_f == 1){
-				--ABS_Gimbal_angle[0];
-		}
+      case REL_ANGLE_PID_TEST:
+        Rel_angle_PID_test_loop(0);
+        break;
 
-		ABS_Gimbal_angle[0] -= (yaw+0.21);
-				/**ABS_Gimbal_angle[0] += ((yaw+0.21) * 100);*/
-				/**ABS_Gimbal_angle[1] -=  pitch * 10;*/
+      case ABS_ANGLE_STABLE_MODE:
+        Abs_angle_control_loop();
+        break;
 
-
-    switch (ABS_ANGLE_STABLE_MODE) {
-    case SPEED_PID_TUNING:
-      speed_loop_PID_tuning(0);
-      break;
-
-    case ABS_ANGLE_PID_TUNING:
-      Abs_anglelop_PID_tuning(0);
-      break;
-
-    case REL_ANGLE_PID_TUNING:
-      Rel_angleloop_PID_tuning(0);
-      break;
-
-    case ABS_ANGLE_PID_TEST:
-      Abs_angle_PID_test_loop(0);
-      break;
-
-    case REL_ANGLE_PID_TEST:
-      Rel_angle_PID_test_loop(0);
-      break;
-
-    case ABS_ANGLE_STABLE_MODE:
-      Abs_angle_control_loop();
-      break;
-
-    case REL_ANGLE_STABLE_MODE:
-      Rel_angle_control_loop();
-      break;
+      case REL_ANGLE_STABLE_MODE:
+        Rel_angle_control_loop();
+        break;
     }
+    
+    HAL_Delay(1);
+
+  // set_moto_current(&hcan1, 3500, 0, 0, 0, 0x1FF);   //6020
+  // set_moto_current(&hcan1, 1500, 0, 0, 0, 0x200);   //3508
 
     /*Debug*/
     if (false) {

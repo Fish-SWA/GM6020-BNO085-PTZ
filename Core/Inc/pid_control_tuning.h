@@ -5,9 +5,10 @@
 #include <pid.h>
 #include <stdio.h>
 #include <bsp_can.h>
+#define printf(...) cprintf(&huart1, __VA_ARGS__)
 
 //限流
-#define CURRENT_LIMIT 2000
+#define CURRENT_LIMIT 9000
 
 extern int i;
 extern int j;

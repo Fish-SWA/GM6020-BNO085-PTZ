@@ -30,7 +30,7 @@ moto_measure_t moto_chassis[4] = {0};
 
 /*******************************************************************************************
   * @Func		my_can_filter_init
-  * @Brief    CAN1和CAN2滤波器配置
+  * @Brief    CAN1和CAN2滤波器配�?
   * @Param		CAN_HandleTypeDef* hcan
   * @Retval		None
   * @Date     2015/11/30
@@ -60,7 +60,7 @@ void my_can_filter_init_recv_all(CAN_HandleTypeDef* _hcan)
 uint32_t FlashTimer;
 /*******************************************************************************************
   * @Func			void HAL_CAN_RxCpltCallback(CAN_HandleTypeDef* _hcan)
-  * @Brief    HAL库中标准的CAN接收完成回调函数，需要在此处理通过CAN总线接收到的数据
+  * @Brief    HAL库中标准的CAN接收完成回调函数，需要在此�?�理通过CAN总线接收到的数据
   * @Param		
   * @Retval		None 
   * @Date     2015/11/24
@@ -87,10 +87,8 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan)
 	
 	switch(Rx1Message.StdId)
 	{
-		case CAN_2006Moto1_ID: MotorID=0; break;
-		case CAN_2006Moto2_ID: MotorID=1; break;
-		case CAN_2006Moto3_ID: MotorID=2; break;
-		case CAN_2006Moto4_ID: MotorID=3; break;
+		case CAN_3508Moto1_ID: MotorID=0; break;
+		case CAN_6020Moto1_ID: MotorID=1; break;
 	}
 		
 	
@@ -147,19 +145,19 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan)
 
 #define ABS(x)	( (x>0) ? (x) : (-x) )
 /**
-*@bref 电机上电角度=0， 之后用这个函数更新3510电机的相对开机后（为0）的相对角度。
+*@bref 电机上电角度=0�? 之后用这�?函数更新3510电机的相对开机后（为0）的相�?��?�度�?
 	*/
 //void get_total_angle(moto_measure_t *p){
 //	
 //	int res1, res2, delta;
-//	if(p->angle < p->last_angle){			//可能的情况
+//	if(p->angle < p->last_angle){			//�?能的情况
 //		res1 = p->angle + 8192 - p->last_angle;	//正转，delta=+
 //		res2 = p->angle - p->last_angle;				//反转	delta=-
 //	}else{	//angle > last
 //		res1 = p->angle - 8192 - p->last_angle ;//反转	delta -
 //		res2 = p->angle - p->last_angle;				//正转	delta +
 //	}
-//	//不管正反转，肯定是转的角度小的那个是真的
+//	//不�?��?�反�?，肯定是�?的�?�度小的那个�?真的
 //	if(ABS(res1)<ABS(res2))
 //		delta = res1;
 //	else
@@ -170,13 +168,13 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan)
 //}
 
 
-void set_moto_current(CAN_HandleTypeDef* hcan, s16 iq1, s16 iq2, s16 iq3, s16 iq4)
+void set_moto_current(CAN_HandleTypeDef* hcan, s16 iq1, s16 iq2, s16 iq3, s16 iq4, s16 StdId)
 {
 	CAN_TxHeaderTypeDef CanTx;
 	uint8_t Data[8];
 	uint32_t Mailbox=0;
 	
-	CanTx.StdId = 0x1FF;  // 0x200
+	CanTx.StdId = StdId;  // 0x200
 	CanTx.ExtId = 0;  // CAN_ID_STD, ExtId is invalid
 	CanTx.IDE = CAN_ID_STD;
 	CanTx.RTR = CAN_RTR_DATA;

@@ -1,5 +1,21 @@
 #include "pid_control_tuning.h"
 
+#include "main.h"
+#include "can.h"
+#include "gpio.h"
+#include "i2c.h"
+#include "usart.h"
+#include "usb_device.h"
+
+#include "bsp_can.h"
+#include "com.h"
+#include "package.h"
+#include "pid.h"
+#include "math.h"
+#include "usbd_cdc_if.h"
+#include <stdio.h>
+#include <string.h>
+
 PID_TypeDef motor_pid[4]; //速度环参数
 PID_TypeDef angle_pid[2]; //位置环参数
 
@@ -42,7 +58,7 @@ void Abs_angle_control_loop()
   motor_pid[motor_ID].f_cal_pid(&motor_pid[motor_ID],moto_chassis[motor_ID].speed_rpm, 0);
 
 
-  set_moto_current(&hcan1, motor_pid[0].output, motor_pid[1].output, 0, 0);
+  // set_moto_current(&hcan1, motor_pid[0].output, motor_pid[1].output, 0, 0);
   /**printf("%d, %d\n", moto_chassis[motor_ID].angle, ABS_IMU_angle[motor_ID]);*/
   HAL_Delay(1);
 }
@@ -73,7 +89,7 @@ void Rel_angle_control_loop()
     motor_pid[motor_ID].target = angle_pid[motor_ID].output; 																							
     motor_pid[motor_ID].f_cal_pid(&motor_pid[motor_ID],moto_chassis[motor_ID].speed_rpm, 0);
 
-    set_moto_current(&hcan1, motor_pid[0].output, motor_pid[1].output, 0, 0);
+    // set_moto_current(&hcan1, motor_pid[0].output, motor_pid[1].output, 0, 0);
     /**printf("%d, %d\n", moto_chassis[0].angle, moto_chassis[1].angle);*/
     /**printf("%f\n", IMU_Angle[0]);*/
     HAL_Delay(1); //1000hz
@@ -92,8 +108,8 @@ void Abs_angle_PID_test_loop(int motor_ID)
   motor_pid[motor_ID].target = abs_pid[motor_ID].output; 																							
   motor_pid[motor_ID].f_cal_pid(&motor_pid[motor_ID],moto_chassis[motor_ID].speed_rpm, 0);
 
-  if(motor_ID == 0) set_moto_current(&hcan1, motor_pid[motor_ID].output, 0, 0, 0);
-  if(motor_ID == 1) set_moto_current(&hcan1, 0, motor_pid[motor_ID].output, 0, 0);
+  // if(motor_ID == 0) set_moto_current(&hcan1, motor_pid[motor_ID].output, 0, 0, 0);
+  // if(motor_ID == 1) set_moto_current(&hcan1, 0, motor_pid[motor_ID].output, 0, 0);
   //set_moto_current(&hcan1, 0, 0, 0, 0);
   //printf("%d\n", moto_chassis[0].speed_rpm);
   //printf("%d\n", moto_chassis[0].total_angle);
@@ -112,8 +128,8 @@ void Rel_angle_PID_test_loop(int motor_ID)
   motor_pid[motor_ID].target = angle_pid[motor_ID].output; 																							
   motor_pid[motor_ID].f_cal_pid(&motor_pid[motor_ID],moto_chassis[motor_ID].speed_rpm, 0);
 
-  if(motor_ID == 0) set_moto_current(&hcan1, motor_pid[motor_ID].output, 0, 0, 0);
-  if(motor_ID == 1) set_moto_current(&hcan1, 0, motor_pid[motor_ID].output, 0, 0);
+  // if(motor_ID == 0) set_moto_current(&hcan1, motor_pid[motor_ID].output, 0, 0, 0);
+  // if(motor_ID == 1) set_moto_current(&hcan1, 0, motor_pid[motor_ID].output, 0, 0);
   //set_moto_current(&hcan1, 0, 0, 0, 0);
   //printf("%d\n", moto_chassis[0].speed_rpm);
   //printf("%d\n", moto_chassis[0].total_angle);
@@ -132,15 +148,16 @@ void speed_loop_PID_tuning(int motor_ID)
 {
   speed = moto_chassis[motor_ID].speed_rpm;
   time++;
-  if(i <= 400) current = 0;
-  else current = 1500;
+  if(i <= 1000) current = 0;
+  else current = 2500;
 
-  if(i >= 800) i = 0;
+  if(i >= 2000) i = 0;
 
-  /**printf("%f, ", (float)j);*/
-  /**printf("%d, %d\n", current, speed);*/
-  if(motor_ID == 0) set_moto_current(&hcan1, current, 0, 0, 0);
-  if(motor_ID == 1) set_moto_current(&hcan1, 0, current, 0, 0);
+  // printf("ok\n");
+  printf("%d, ",j);
+  printf("%d, %d\n", current, speed);
+  if(motor_ID == 0) set_moto_current(&hcan1, current, 0, 0, 0, 0x200);          //3508
+  if(motor_ID == 1) set_moto_current(&hcan1, current, 0, 0, 0, 0x1FF);          //6020
 }
 
 //编码器位置环科学调参
@@ -150,15 +167,15 @@ void Rel_angleloop_PID_tuning(int motor_ID)
   else if(i >100 && i<=1100) speed_set = -15;
   else if(i >1100 && i<=2100) speed_set = 15;
   if(i > 2100) i = 0;
-  //speed_set = 25;
+  speed_set = 900;
   
   motor_pid[motor_ID].target = speed_set; 																							
   motor_pid[motor_ID].f_cal_pid(&motor_pid[motor_ID], moto_chassis[motor_ID].speed_rpm, 0);
-  if(motor_ID == 0) set_moto_current(&hcan1, motor_pid[motor_ID].output, 0, 0, 0);
-  if(motor_ID == 1) set_moto_current(&hcan1, 0, motor_pid[motor_ID].output, 0, 0);
+  if(motor_ID == 0) set_moto_current(&hcan1, motor_pid[motor_ID].output, 0, 0, 0, 0x200);          //3508
+  if(motor_ID == 1) set_moto_current(&hcan1, motor_pid[motor_ID].output, 0, 0, 0, 0x1FF);          //6020
   //set_moto_current(&hcan1, 0, 0, 0, 0);
-  //printf("%d\n", moto_chassis[0].speed_rpm);
-  //printf("%d\n", moto_chassis[0].total_angle);
+  printf("%d, %f\n", moto_chassis[0].speed_rpm, motor_pid[motor_ID].output);
+  // printf("%d\n", moto_chassis[0].total_angle);
   /**printf("%f, ", (float)j);*/
   /**printf("%d, %d\n", speed_set, moto_chassis[motor_ID].total_angle);*/
 }
@@ -178,8 +195,8 @@ void Abs_anglelop_PID_tuning(int motor_ID)
   
   motor_pid[motor_ID].target = speed_set; 																							
   motor_pid[motor_ID].f_cal_pid(&motor_pid[motor_ID], moto_chassis[motor_ID].speed_rpm, 0);
-  if(motor_ID == 0) set_moto_current(&hcan1, motor_pid[motor_ID].output, 0, 0, 0);
-  if(motor_ID == 1) set_moto_current(&hcan1, 0, motor_pid[motor_ID].output, 0, 0);
+  // if(motor_ID == 0) set_moto_current(&hcan1, motor_pid[motor_ID].output, 0, 0, 0);
+  // if(motor_ID == 1) set_moto_current(&hcan1, 0, motor_pid[motor_ID].output, 0, 0);
   //set_moto_current(&hcan1, 0, 0, 0, 0);
   //printf("%d\n", moto_chassis[0].speed_rpm);
   //printf("%d\n", moto_chassis[0].total_angle);

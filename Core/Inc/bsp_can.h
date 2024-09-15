@@ -33,14 +33,12 @@
 #include "can.h"
 
 
-/*CAN发送或�?接收的ID*/
+/*CAN发送或�?接收的ID*/
 typedef enum
 {
 	CAN_2006Moto_ALL_ID = 0x200,
-	CAN_2006Moto1_ID = 0x205,
-	CAN_2006Moto2_ID = 0x206,
-	CAN_2006Moto3_ID = 0x207,
-	CAN_2006Moto4_ID = 0x208,
+	CAN_3508Moto1_ID = 0x201,
+	CAN_6020Moto1_ID = 0x205
 }CAN_Message_ID;
 
 
@@ -71,7 +69,7 @@ void my_can_filter_init_recv_all(CAN_HandleTypeDef* _hcan);
 void can_filter_recv_special(CAN_HandleTypeDef* hcan, uint8_t filter_number, uint16_t filtered_id);
 void get_moto_measure(moto_measure_t *ptr, uint8_t Data[]);
 void can_receive_onetime(CAN_HandleTypeDef* _hcan, int time);
-void set_moto_current(CAN_HandleTypeDef* hcan, s16 iq1, s16 iq2, s16 iq3, s16 iq4);
+void set_moto_current(CAN_HandleTypeDef* hcan, s16 iq1, s16 iq2, s16 iq3, s16 iq4, s16 StdId);
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef* hcan);
 
 #endif
