@@ -141,11 +141,11 @@ int main(void) {
 
   // 6020 PID
   pid_init(&motor_pid[1]); // 速度环
-  motor_pid[1].f_param_init(&motor_pid[1], PID_Speed, CURRENT_LIMIT, 5000, 0, 0,
-                            0, 8000, 4.01239768, 3.0348503, 0);
+  motor_pid[1].f_param_init(&motor_pid[1], PID_Speed, CURRENT_LIMIT, 15000, 0, 0,
+                            0, 8000, 112.73442566396369, 7.347659387059064, 0);
   pid_init(&angle_pid[1]); // 位置环
   angle_pid[1].f_param_init(&angle_pid[1], PID_Speed, 500, 500, 0, 0, 4000, 0,
-                            1.27137, 0.01084, 27.877753 * 0.4);
+                            0.6745661429894514, 0.010929750727867575, 9.989887536853216 * 0.1);
   
   //以下不使用
   pid_init(&abs_pid[1]); // 位置环（自稳）
@@ -171,7 +171,7 @@ int main(void) {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    switch (SPEED_PID_TUNING) {
+    switch (REL_ANGLE_PID_TEST) {
       case SPEED_PID_TUNING:
         speed_loop_PID_tuning(1);
         break;
@@ -181,7 +181,7 @@ int main(void) {
         break;
 
       case REL_ANGLE_PID_TUNING:
-        Rel_angleloop_PID_tuning(0);
+        Rel_angleloop_PID_tuning(1);
         break;
 
       case ABS_ANGLE_PID_TEST:
@@ -189,7 +189,7 @@ int main(void) {
         break;
 
       case REL_ANGLE_PID_TEST:
-        Rel_angle_PID_test_loop(0);
+        Rel_angle_PID_test_loop(1);
         break;
 
       case ABS_ANGLE_STABLE_MODE:

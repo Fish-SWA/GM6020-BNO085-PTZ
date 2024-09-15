@@ -8,7 +8,7 @@
 #define printf(...) cprintf(&huart1, __VA_ARGS__)
 
 //限流
-#define CURRENT_LIMIT 9000
+#define CURRENT_LIMIT 20000
 
 extern int i;
 extern int j;
