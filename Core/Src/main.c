@@ -139,12 +139,12 @@ int main(void) {
   /* USER CODE BEGIN WHILE */
   // 3508 PID
   pid_init(&motor_pid[0]); // 速度环
-  motor_pid[0].f_param_init(&motor_pid[0], PID_Speed, CURRENT_LIMIT, 5000, 0, 0,
-                            0, 8000, 9.514198185530965, 0.35996801530663863, 0);
-  //以下不使用
+  motor_pid[0].f_param_init(&motor_pid[0], PID_Speed, CURRENT_LIMIT, 8000, 0, 0,
+                            0, 8000, 0.24842814838095523 * 10, 0.0015076889622227807 * 10, 0);
   pid_init(&angle_pid[0]); // 位置环（相对位置）
-  angle_pid[0].f_param_init(&angle_pid[0], PID_Speed, 300, 300, 0, 0, 4000, 0,
-                            1.3713, 0.00495369, 94.8474 * 0);
+  angle_pid[0].f_param_init(&angle_pid[0], PID_Speed, 2000, 1500, 40, 0, 4000, 0,
+                            0.8127202642917449, 0.018356653060468776*0.1, 8.343916758406207 * 1.5);
+  //以下不使用
   pid_init(&abs_pid[0]); // 位置环（自稳）
   abs_pid[0].f_param_init(&abs_pid[0], PID_Speed, 300, 300, 0, 0, 4000, 0, -0.9,
                           -0.003, -3);
@@ -183,9 +183,9 @@ int main(void) {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    switch (REL_ANGLE_STABLE_MODE) {
+    switch (REL_ANGLE_PID_TEST) {
       case SPEED_PID_TUNING:
-        speed_loop_PID_tuning(1);     //速度环调定
+        speed_loop_PID_tuning(0);     //速度环调定
         break;
 
       case ABS_ANGLE_PID_TUNING:
@@ -193,7 +193,7 @@ int main(void) {
         break;
 
       case REL_ANGLE_PID_TUNING:
-        Rel_angleloop_PID_tuning(1);  //位置环调定 & 速度环测试
+        Rel_angleloop_PID_tuning(0);  //位置环调定 & 速度环测试
         break;
 
       case ABS_ANGLE_PID_TEST:
@@ -201,7 +201,7 @@ int main(void) {
         break;
 
       case REL_ANGLE_PID_TEST:
-        Rel_angle_PID_test_loop(1);   //位置环测试
+        Rel_angle_PID_test_loop(0);   //位置环测试
         break;
 
       case ABS_ANGLE_STABLE_MODE:

@@ -126,7 +126,7 @@ void Abs_angle_PID_test_loop(int motor_ID)
 void Rel_angle_PID_test_loop(int motor_ID)
 {
   angle_pid[motor_ID].target = 7000;
-  angle_pid[motor_ID].f_cal_pid(&angle_pid[motor_ID], moto_chassis[motor_ID].angle, 8192);
+  angle_pid[motor_ID].f_cal_pid(&angle_pid[motor_ID], moto_chassis[motor_ID].total_angle, 0);
   //printf("%d\n", (int)angle_pid.output);
 
   motor_pid[motor_ID].target = angle_pid[motor_ID].output; 																							
@@ -135,10 +135,10 @@ void Rel_angle_PID_test_loop(int motor_ID)
   if(motor_ID == 0) set_moto_current(&hcan1, motor_pid[motor_ID].output, 0, 0, 0, 0x200);          //3508
   if(motor_ID == 1) set_moto_current(&hcan1, motor_pid[motor_ID].output, 0, 0, 0, 0x1FF);          //6020
   //set_moto_current(&hcan1, 0, 0, 0, 0);
-  //printf("%d\n", moto_chassis[0].speed_rpm);
+  printf("%d, %f, %f\n", moto_chassis[0].speed_rpm, angle_pid[motor_ID].output, motor_pid[motor_ID].output);
   //printf("%d\n", moto_chassis[0].total_angle);
   /**printf("%f, ", (float)j);*/
-  HAL_Delay(1);
+  // HAL_Delay(1);
   /**printf("%d, %d, %d, %d, %f, %f, %d\n", */
   /**                  speed_set, moto_chassis[motor_ID].angle, */
   /**                  (int)motor_pid[motor_ID].output, */
@@ -153,7 +153,7 @@ void speed_loop_PID_tuning(int motor_ID)
   speed = moto_chassis[motor_ID].speed_rpm;
   time++;
   if(i <= 300) current = 0;
-  else current = 4000;
+  else current = 500 ;
 
   if(i >= 600) i = 0;
 
@@ -168,10 +168,10 @@ void speed_loop_PID_tuning(int motor_ID)
 void Rel_angleloop_PID_tuning(int motor_ID)
 {
   if(i <= 100) speed_set = 0;
-  else if(i >100 && i<=1100) speed_set = -15;
-  else if(i >1100 && i<=2100) speed_set = 15;
+  else if(i >100 && i<=1100) speed_set = -1500;
+  else if(i >1100 && i<=2100) speed_set = 1500;
   if(i > 2100) i = 0;
-  // speed_set = 20;
+  // speed_set = 2500;
   
   motor_pid[motor_ID].target = speed_set; 																							
   motor_pid[motor_ID].f_cal_pid(&motor_pid[motor_ID], moto_chassis[motor_ID].speed_rpm, 0);
